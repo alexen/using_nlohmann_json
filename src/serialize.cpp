@@ -43,6 +43,19 @@ std::ostream& operator<<( std::ostream& os, const StringVector& sv )
 }
 
 
+template< typename ValueT >
+std::ostream& operator<<( std::ostream& os, const KeyValueObject< ValueT >& kvObj )
+{
+     const char* sep = "";
+     for( auto&& [key, value]: kvObj )
+     {
+          os << sep << '{' << std::quoted( key ) << ": \"" << value << "\"}";
+          sep = ", ";
+     }
+     return os;
+}
+
+
 std::ostream& operator<<( std::ostream& os, const Payload& payload )
 {
      return os
@@ -56,6 +69,10 @@ std::ostream& operator<<( std::ostream& os, const Payload& payload )
           << "\n  iat: " << payload.iat
           << "\n  iss: " << payload.iss
           << "\n  req_cti: " << payload.req_cti
+          << "\n  obtained_consent_list: " << payload.obtained_consent_list
+          << "\n  requested_consent_list: " << payload.requested_consent_list
+          << "\n  resource: " << payload.resource
+          << "\n  urn_esia_trust: " << payload.urn_esia_trust
           ;
 }
 
@@ -182,6 +199,10 @@ void from_json( const nlohmann::json& json, Payload& payload )
      JSON_GET( json, payload, iat );
      JSON_GET( json, payload, iss );
      JSON_GET( json, payload, req_cti );
+     JSON_GET( json, payload, obtained_consent_list );
+     JSON_GET( json, payload, requested_consent_list );
+     JSON_GET( json, payload, resource );
+     JSON_GET_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
 }
 
 
@@ -196,4 +217,8 @@ void to_json( nlohmann::json& json, const Payload& payload )
      JSON_PUT( json, payload, iat );
      JSON_PUT( json, payload, iss );
      JSON_PUT( json, payload, req_cti );
+     JSON_PUT( json, payload, obtained_consent_list );
+     JSON_PUT( json, payload, requested_consent_list );
+     JSON_PUT( json, payload, resource );
+     JSON_PUT_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
 }

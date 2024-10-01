@@ -14,6 +14,11 @@ add_executable(
           src/main.cpp
           src/serialize.cpp
      )
+target_sources(
+     ${PROJECT_NAME}
+     PRIVATE
+          src/serialize.h
+     )
 target_link_libraries(
      ${PROJECT_NAME}
      PRIVATE

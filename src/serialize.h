@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctime>
+#include <map>
 #include <string>
 #include <nlohmann/json_fwd.hpp>
 
@@ -26,6 +27,11 @@ std::ostream& operator<<( std::ostream&, const Header& );
 
 using StringVector = std::vector< std::string >;
 
+template< typename ValueT >
+using KeyValueObject = std::map< std::string, ValueT >;
+using KeyStringObject = KeyValueObject< std::string >;
+using KeyBytesObject = KeyValueObject< Bytes >;
+
 struct Payload {
      StringVector aud;
      std::string client_id;
@@ -36,6 +42,10 @@ struct Payload {
      std::time_t iat;
      std::string iss;
      Bytes req_cti;
+     KeyStringObject obtained_consent_list;
+     KeyStringObject requested_consent_list;
+     KeyStringObject resource;
+     KeyBytesObject urn_esia_trust;
 };
 
 
