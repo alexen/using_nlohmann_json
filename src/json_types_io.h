@@ -28,7 +28,7 @@ inline std::ostream& operator<<( std::ostream& os, const SequenceOf< T >& seq )
 
 
 template< typename ValueT >
-inline std::ostream& operator<<( std::ostream& os, const KeyValueObject< ValueT >& kvObj )
+inline std::ostream& operator<<( std::ostream& os, const ObjectOf< ValueT >& kvObj )
 {
      const char* sep = "";
      for( auto&& [key, value]: kvObj )

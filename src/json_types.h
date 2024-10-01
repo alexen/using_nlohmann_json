@@ -13,10 +13,7 @@ template< typename T >
 using SequenceOf = std::vector< T >;
 
 template< typename ValueT >
-using KeyValueObject = std::map< std::string, ValueT >;
+using ObjectOf = std::map< std::string, ValueT >;
 
-using StringValueObject = KeyValueObject< std::string >;
-using BytesValuesObject = KeyValueObject< Bytes >;
-
-using OptionalStringValueObject = std::optional< StringValueObject >;
-using OptionalBytesValuesObject = std::optional< BytesValuesObject >;
+template< typename ValueT >
+using OptionalObjectOf = std::optional< ObjectOf< ValueT > >;

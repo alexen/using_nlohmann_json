@@ -32,10 +32,10 @@ struct Payload
      std::time_t iat;
      std::string iss;
      Bytes req_cti;
-     OptionalStringValueObject obtained_consent_list;
-     OptionalStringValueObject requested_consent_list;
-     OptionalStringValueObject resource;
-     OptionalBytesValuesObject urn_esia_trust;
+     OptionalObjectOf< std::string > obtained_consent_list;
+     OptionalObjectOf< std::string > requested_consent_list;
+     OptionalObjectOf< std::string > resource;
+     OptionalObjectOf< Bytes > urn_esia_trust;
 };
 
 
