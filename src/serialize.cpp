@@ -31,6 +31,35 @@ std::ostream& operator<<( std::ostream& os, const Header& header )
 }
 
 
+std::ostream& operator<<( std::ostream& os, const StringVector& sv )
+{
+     const char* sep= "";
+     for( auto&& each: sv )
+     {
+          os << sep << each;
+          sep = ", ";
+     }
+     return os;
+}
+
+
+std::ostream& operator<<( std::ostream& os, const Payload& payload )
+{
+     return os
+          << "Payload:"
+          << "\n  aud: " << payload.aud
+          << "\n  client_id: " << payload.client_id
+          << "\n  client_name: " << payload.client_name
+          << "\n  client_ogrnip: " << payload.client_ogrnip
+          << "\n  cti: " << payload.cti
+          << "\n  exp: " << payload.exp
+          << "\n  iat: " << payload.iat
+          << "\n  iss: " << payload.iss
+          << "\n  req_cti: " << payload.req_cti
+          ;
+}
+
+
 /// Поддержка сериализации third-party типов
 /// @see https://github.com/nlohmann/json#how-do-i-convert-third-party-types
 ///
@@ -139,4 +168,32 @@ void to_json( nlohmann::json& json, const Header& header )
      JSON_PUT_EXT( json, header, x5tSt256, "x5t#St256" );
      JSON_PUT( json, header, sbt );
      JSON_PUT( json, header, ver );
+}
+
+
+void from_json( const nlohmann::json& json, Payload& payload )
+{
+     JSON_GET( json, payload, aud );
+     JSON_GET( json, payload, client_id );
+     JSON_GET( json, payload, client_name );
+     JSON_GET( json, payload, client_ogrnip );
+     JSON_GET( json, payload, cti );
+     JSON_GET( json, payload, exp );
+     JSON_GET( json, payload, iat );
+     JSON_GET( json, payload, iss );
+     JSON_GET( json, payload, req_cti );
+}
+
+
+void to_json( nlohmann::json& json, const Payload& payload )
+{
+     JSON_PUT( json, payload, aud );
+     JSON_PUT( json, payload, client_id );
+     JSON_PUT( json, payload, client_name );
+     JSON_PUT( json, payload, client_ogrnip );
+     JSON_PUT( json, payload, cti );
+     JSON_PUT( json, payload, exp );
+     JSON_PUT( json, payload, iat );
+     JSON_PUT( json, payload, iss );
+     JSON_PUT( json, payload, req_cti );
 }

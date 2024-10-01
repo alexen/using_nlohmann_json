@@ -44,8 +44,9 @@ int main()
 
           std::cout << std::setw( 2 ) <<
                 nlohmann::json::from_cbor( parsed[ 0 ].get_binary() ).get< Header >() << '\n';
+          std::cout << std::setw( 2 ) <<
+                nlohmann::json::from_cbor( parsed[ 1 ].get_binary() ).get< Payload >() << '\n';
 
-          const auto& payload = parsed[ 1 ].get_binary();
           const auto& signature = parsed[ 2 ].get_binary();
      }
      catch( ... )

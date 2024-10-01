@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctime>
 #include <string>
 #include <nlohmann/json_fwd.hpp>
 
@@ -15,8 +16,8 @@ struct Header {
 };
 
 
-void from_json( const nlohmann::json& json, Header& header );
-void to_json( nlohmann::json& json, const Header& header );
+void from_json( const nlohmann::json&, Header& );
+void to_json( nlohmann::json&, const Header& );
 
 
 std::ostream& operator<<( std::ostream&, const Bytes& );
@@ -30,20 +31,16 @@ struct Payload {
      std::string client_id;
      std::string client_name;
      std::string client_ogrnip;
-     std::string cti;
-     std::string exp;
-     std::string iat;
+     Bytes cti;
+     std::time_t exp;
+     std::time_t iat;
      std::string iss;
-//     obtained_consent_list;
-     std::string req_cti;
-//     requested_consent_list;
-//     resource;
-//     urn_esia_trust;
+     Bytes req_cti;
 };
 
 
-void from_json( const nlohmann::json& json, Payload& header );
-void to_json( nlohmann::json& json, const Payload& header );
+void from_json( const nlohmann::json&, Payload& );
+void to_json( nlohmann::json&, const Payload& );
 
 
 std::ostream& operator<<( std::ostream&, const StringVector& );
