@@ -29,8 +29,8 @@ using StringVector = std::vector< std::string >;
 
 template< typename ValueT >
 using KeyValueObject = std::map< std::string, ValueT >;
-using KeyStringObject = KeyValueObject< std::string >;
-using KeyBytesObject = KeyValueObject< Bytes >;
+using StringValueObject = KeyValueObject< std::string >;
+using BytesValuesObject = KeyValueObject< Bytes >;
 
 struct Payload {
      StringVector aud;
@@ -42,10 +42,10 @@ struct Payload {
      std::time_t iat;
      std::string iss;
      Bytes req_cti;
-     KeyStringObject obtained_consent_list;
-     KeyStringObject requested_consent_list;
-     KeyStringObject resource;
-     KeyBytesObject urn_esia_trust;
+     StringValueObject obtained_consent_list;
+     StringValueObject requested_consent_list;
+     StringValueObject resource;
+     BytesValuesObject urn_esia_trust;
 };
 
 
