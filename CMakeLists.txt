@@ -13,11 +13,15 @@ add_executable(
      ${PROJECT_NAME}
           src/main.cpp
           src/serialize.cpp
+          src/serialize_io.cpp
      )
 target_sources(
      ${PROJECT_NAME}
      PRIVATE
+          src/json_types.h
+          src/json_types_io.h
           src/serialize.h
+          src/serialize_io.h
      )
 target_link_libraries(
      ${PROJECT_NAME}
