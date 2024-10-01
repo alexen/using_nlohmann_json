@@ -6,6 +6,9 @@
 
 #include <nlohmann/json.hpp>
 
+#include "serialize.h"
+
+
 using namespace std::string_literals;
 
 
@@ -29,22 +32,19 @@ static const auto cbor =
      "16d5ede8efdded21"s;
 
 
-}
-
-
-
 int main()
 {
      try
      {
           const auto parsed = nlohmann::json::from_cbor( boost::algorithm::unhex( cbor ) );
-          std::cout << parsed << '\n';
           if( parsed.is_array() and parsed.size() != 3u )
           {
                throw std::invalid_argument{ "bad CWT format" };
           }
 
-          const auto& header = parsed[ 0 ].get_binary();
+          std::cout << std::setw( 2 ) <<
+                nlohmann::json::from_cbor( parsed[ 0 ].get_binary() ).get< Header >() << '\n';
+
           const auto& payload = parsed[ 1 ].get_binary();
           const auto& signature = parsed[ 2 ].get_binary();
      }
