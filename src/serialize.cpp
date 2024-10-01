@@ -56,6 +56,21 @@ std::ostream& operator<<( std::ostream& os, const KeyValueObject< ValueT >& kvOb
 }
 
 
+template< typename T >
+std::ostream& operator<<( std::ostream& os, const std::optional< T >& opt )
+{
+     if( opt )
+     {
+          os << *opt;
+     }
+     else
+     {
+          os << "--";
+     }
+     return os;
+}
+
+
 std::ostream& operator<<( std::ostream& os, const Payload& payload )
 {
      return os
@@ -199,10 +214,10 @@ void from_json( const nlohmann::json& json, Payload& payload )
      JSON_GET( json, payload, iat );
      JSON_GET( json, payload, iss );
      JSON_GET( json, payload, req_cti );
-     JSON_GET( json, payload, obtained_consent_list );
-     JSON_GET( json, payload, requested_consent_list );
-     JSON_GET( json, payload, resource );
-     JSON_GET_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
+     JSON_GET_IF_PRESENT( json, payload, obtained_consent_list );
+     JSON_GET_IF_PRESENT( json, payload, requested_consent_list );
+     JSON_GET_IF_PRESENT( json, payload, resource );
+     JSON_GET_IF_PRESENT_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
 }
 
 
