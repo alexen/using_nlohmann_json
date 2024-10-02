@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "json_types.h"
+#include <json_types.h>
 
 
 struct CwtError : std::runtime_error {

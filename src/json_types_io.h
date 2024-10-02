@@ -3,7 +3,7 @@
 #include <ostream>
 #include <boost/algorithm/hex.hpp>
 
-#include "json_types.h"
+#include <json_types.h>
 
 
 inline std::ostream& operator<<( std::ostream& os, const Bytes& bytes )

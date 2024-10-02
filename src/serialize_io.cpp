@@ -1,8 +1,9 @@
 #include "serialize_io.h"
 
 #include <ostream>
-#include "serialize.h"
-#include "json_types_io.h"
+
+#include <serialize.h>
+#include <json_types_io.h>
 
 
 std::ostream& operator<<( std::ostream& os, const Header& header )
