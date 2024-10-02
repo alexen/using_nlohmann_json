@@ -71,7 +71,7 @@ struct adl_serializer< std::optional< T > >
 } // namespace nlohmann
 
 
-#define JSON_GET_IF_PRESENT_EXT( from_json, to_model, field_name, json_value_name )  \
+#define JSON_GET_OPTIONAL_EXT( from_json, to_model, field_name, json_value_name )  \
      do {                                                                            \
           const auto found = from_json.find( json_value_name );                      \
           if( found != json.end()  ) {                                               \
@@ -81,8 +81,8 @@ struct adl_serializer< std::optional< T > >
           }                                                                          \
      } while( false )
 
-#define JSON_GET_IF_PRESENT( from_json, to_model, field_name ) \
-     JSON_GET_IF_PRESENT_EXT( from_json, to_model, field_name, #field_name )
+#define JSON_GET_OPTIONAL( from_json, to_model, field_name ) \
+     JSON_GET_OPTIONAL_EXT( from_json, to_model, field_name, #field_name )
 
 #define JSON_GET_EXT( from_json, to_model, field_name, json_value_name ) \
      from_json.at( json_value_name ).get_to( to_model.field_name )
@@ -134,10 +134,10 @@ void from_json( const nlohmann::json& json, RequestPayload& payload )
      JSON_GET( json, payload, client_ogrnip );
 
      JSON_GET( json, payload, resource );
-     JSON_GET_IF_PRESENT( json, payload, obtained_consent_list );
-     JSON_GET_IF_PRESENT( json, payload, requested_consent_list );
+     JSON_GET_OPTIONAL( json, payload, obtained_consent_list );
+     JSON_GET_OPTIONAL( json, payload, requested_consent_list );
 
-     JSON_GET_IF_PRESENT_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
+     JSON_GET_OPTIONAL_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
 }
 
 
@@ -179,7 +179,7 @@ void from_json( const nlohmann::json& json, ResponsePayload& payload )
      JSON_GET( json, payload, client_id );
 
      JSON_GET( json, payload, resource );
-     JSON_GET_IF_PRESENT( json, payload, requested_consent_list );
+     JSON_GET_OPTIONAL( json, payload, requested_consent_list );
      JSON_GET( json, payload, user_device );
 
      JSON_GET_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
