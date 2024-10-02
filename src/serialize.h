@@ -53,3 +53,33 @@ struct RequestPayload
 
 void from_json( const nlohmann::json&, RequestPayload& );
 void to_json( nlohmann::json&, const RequestPayload& );
+
+
+struct ResponsePayload
+{
+     /// Случайные числа для защиты от атак межсайтовых запросов и повторного воспроизведения
+     Bytes cti;
+     Bytes req_cti;
+
+     /// Поля адресации токена
+     std::string iss;
+     std::string aud;
+
+     /// Сроки действия токена
+     std::time_t iat;
+     std::time_t exp;
+
+     /// Обязательные параметры токена ответа на запрос разрешений/согласий конечного пользователя
+     Bytes sub;
+     std::string client_id;
+     ObjectOf< std::string > resource;
+     OptionalObjectOf< std::string > requested_consent_list;
+     ObjectOf< Bytes > user_device;
+
+     /// Обязательные параметры для построения цепочки доверия
+     ObjectOf< Bytes > urn_esia_trust;
+};
+
+
+void from_json( const nlohmann::json&, ResponsePayload& );
+void to_json( nlohmann::json&, const ResponsePayload& );

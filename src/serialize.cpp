@@ -162,3 +162,44 @@ void to_json( nlohmann::json& json, const RequestPayload& payload )
 
      JSON_PUT_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
 }
+
+
+void from_json( const nlohmann::json& json, ResponsePayload& payload )
+{
+     JSON_GET( json, payload, cti );
+     JSON_GET( json, payload, req_cti );
+
+     JSON_GET( json, payload, iss );
+     JSON_GET( json, payload, aud );
+
+     JSON_GET( json, payload, iat );
+     JSON_GET( json, payload, exp );
+
+     JSON_GET( json, payload, sub );
+     JSON_GET( json, payload, client_id );
+
+     JSON_GET( json, payload, resource );
+     JSON_GET_IF_PRESENT( json, payload, requested_consent_list );
+     JSON_GET( json, payload, user_device );
+
+     JSON_GET_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
+}
+
+
+void to_json( nlohmann::json& json, const ResponsePayload& payload )
+{
+     JSON_PUT( json, payload, cti );
+     JSON_PUT( json, payload, req_cti );
+
+     JSON_PUT( json, payload, iss );
+     JSON_PUT( json, payload, aud );
+
+     JSON_PUT( json, payload, iat );
+     JSON_PUT( json, payload, exp );
+
+     JSON_PUT( json, payload, sub );
+     JSON_PUT( json, payload, client_id );
+
+     JSON_PUT( json, payload, resource );
+     JSON_PUT_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
+}
