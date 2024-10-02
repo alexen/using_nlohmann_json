@@ -22,12 +22,11 @@ bool lifetimeIsValid(
 
 
 struct Cwt {
+     explicit Cwt( const Bytes& cbor );
+
      Bytes header;
      Bytes payload;
      Bytes signature;
-
-     static Cwt fromCbor( const Bytes& cbor );
-     Bytes toCbor();
 
      /// Формирует особый CBOR (to-be-signed) для проверки подписи
      Bytes makeTbsBlock() const;
@@ -36,9 +35,6 @@ struct Cwt {
 
 struct AuthConsentRequest {
      struct Header {
-          static Header fromCbor( const Bytes& cbor );
-          Bytes toCbor();
-
           /// Обязательные стандартизированные параметры заголовка
           std::string typ;
           std::string alg;
@@ -47,13 +43,10 @@ struct AuthConsentRequest {
           /// Обязательные нестандартизированные параметры заголовка
           int ver;
           std::string sbt;
+
+          explicit Header( const Bytes& cbor );
      };
-
-
      struct Payload {
-          static Payload fromCbor( const Bytes& cbor );
-          Bytes toCbor();
-
           /// Случайные числа для защиты от атак межсайтовых запросов и повторного воспроизведения
           Bytes cti;
           Bytes req_cti;
@@ -76,21 +69,20 @@ struct AuthConsentRequest {
 
           /// Обязательные параметры для построения цепочки доверия
           OptionalObjectOf< Bytes > urn_esia_trust;
+
+          explicit Payload( const Bytes& cbor );
      };
 
      Header header;
      Payload payload;
 
-     static AuthConsentRequest fromCbor( const Bytes& headerCbor, const Bytes& payloadCbor );
-     static AuthConsentRequest fromCwt( const Cwt& );
+     explicit AuthConsentRequest( const Cwt& );
+     AuthConsentRequest( const Bytes& header, const Bytes& payload );
 };
 
 
 struct AuthConsentResponse {
      struct Header {
-          static Header fromCbor( const Bytes& cbor );
-          Bytes toCbor();
-
           /// Обязательные стандартизированные параметры заголовка
           std::string typ;
           std::string alg;
@@ -99,12 +91,11 @@ struct AuthConsentResponse {
           /// Обязательные нестандартизированные параметры заголовка
           int ver;
           std::string sbt;
+
+          explicit Header( const Bytes& cbor );
      };
      struct Payload
      {
-          static Payload fromCbor( const Bytes& cbor );
-          Bytes toCbor();
-
           /// Случайные числа для защиты от атак межсайтовых запросов и повторного воспроизведения
           Bytes cti;
           Bytes req_cti;
@@ -125,11 +116,13 @@ struct AuthConsentResponse {
 
           /// Обязательные параметры для построения цепочки доверия
           ObjectOf< Bytes > urn_esia_trust;
+
+          explicit Payload( const Bytes& cbor );
      };
 
      Header header;
      Payload payload;
 
-     static AuthConsentResponse fromCbor( const Bytes& headerCbor, const Bytes& payloadCbor );
-     static AuthConsentResponse fromCwt( const Cwt& );
+     explicit AuthConsentResponse( const Cwt& );
+     AuthConsentResponse( const Bytes& headerCbor, const Bytes& payloadCbor );
 };

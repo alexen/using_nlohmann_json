@@ -77,13 +77,13 @@ BOOST_AUTO_TEST_CASE( ValidCborToCwt )
 
      const auto cborBin = boost::algorithm::unhex( cborHex );
 
-     BOOST_REQUIRE_NO_THROW( Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() }) );
+     BOOST_REQUIRE_NO_THROW( Cwt({ cborBin.cbegin(), cborBin.cend() }) );
 }
 BOOST_AUTO_TEST_CASE( InvalidCborToCwt )
 {
      const std::string cborBin = "Not a CBOR at all!";
 
-     BOOST_REQUIRE_THROW( Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() }), CwtError );
+     BOOST_REQUIRE_THROW( Cwt({ cborBin.cbegin(), cborBin.cend() }), CwtError );
 }
 BOOST_AUTO_TEST_CASE( ParseCryptoConsentRequestCwt )
 {
@@ -111,8 +111,8 @@ BOOST_AUTO_TEST_CASE( ParseCryptoConsentRequestCwt )
 
      const auto cborBin = boost::algorithm::unhex( cborHex );
 
-     const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
-     const auto parsed = AuthConsentRequest::fromCwt( cwt );
+     const Cwt cwt({ cborBin.cbegin(), cborBin.cend() });
+     const AuthConsentRequest parsed{ cwt };
 
      BOOST_TEST( parsed.header.typ == "CWT" );
      BOOST_TEST( parsed.header.alg == "GOST341012" );
@@ -188,8 +188,8 @@ BOOST_AUTO_TEST_CASE( ParseCryptoConsentResponseCwt )
 
      const auto cborBin = boost::algorithm::unhex( cborHex );
 
-     const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
-     const auto parsed = AuthConsentResponse::fromCwt( cwt );
+     const Cwt cwt({ cborBin.cbegin(), cborBin.cend() });
+     const AuthConsentResponse parsed{ cwt };
 
      BOOST_TEST( parsed.header.typ == "CWT" );
      BOOST_TEST( parsed.header.alg == "GOST341012" );
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE( CreateTbsCbor )
 
      const auto cborBin = boost::algorithm::unhex( cborHex );
 
-     const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
+     const Cwt cwt({ cborBin.cbegin(), cborBin.cend() });
      const auto tbsBlock = cwt.makeTbsBlock();
      BOOST_TEST( asHex( tbsBlock ) == "846A5369676E6174757265315860A563616C676A474F5354333431303132637362747263727970746F5F636F6E73656E745F726571637479706343575463766572016978357423537432353658201E0E64B7E2210E34F19293328E3CE191180E39A37E25A9B9F23A724D91F72553405901B0AD6361756481666D706175746869636C69656E745F69646579612E72756B636C69656E745F6E616D6567636C69656E74316D636C69656E745F6F67726E69706D31313332303734353037333535636374695820911E36FA217419310B0329B04B830A06AF76D103A5E9A3223ED24DBA92472887636578701A66FBE6A9636961741A66FBE57D636973737818687474703A2F2F657369612E676F7375736C7567692E7275756F627461696E65645F636F6E73656E745F6C697374A16866756C6C6E616D6573D0BFD0BED0BBD0BDD0BED0B520D0B8D0BCD18F677265715F6374695820C5DCB61DF15D70CC17FB6E74F5BCF6710D1AC376D03D9B77C4973F92BA1472C7767265717565737465645F636F6E73656E745F6C697374A1696269727468646174657819D094D0B0D182D0B020D180D0BED0B6D0B4D0B5D0BDD0B8D18F687265736F75726365A167736572766572316C73657276657231206E616D656E75726E3A657369613A7472757374A1781F75726E3A657369613A74727573743A63727970746F5F617574685F72657370582021CBB4569DE6092FD6AD3968B08F65A07798AFB8865A5D783E81E4C3A133F70B" );
 }

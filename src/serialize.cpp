@@ -262,75 +262,63 @@ void to_json( nlohmann::json& json, const AuthConsentResponse::Payload& payload 
 
 namespace {
 namespace internal {
+namespace cbor_convert {
 
 
-void translateExceptions()
+template< typename ModelT >
+void fromCbor( const Bytes& cbor, ModelT& model )
 {
      using namespace std::string_literals;
-
-     try { throw; }
-     catch( const nlohmann::json::parse_error& e )
+     try
+     {
+          nlohmann::json::from_cbor( cbor ).get_to( model );
+     }
+     catch( const nlohmann::json::exception& e )
      {
           throw CwtParsingError{ "CWT parsing error: "s + e.what() };
      }
-     catch( const std::exception&e )
-     {
-          throw CwtError{ "CWT error: "s + e.what() };
-     }
      catch( ... )
      {
-          throw CwtError{ "unexpected error: "
+          throw CwtParsingError{ "CWT unknown parsing error: "s
                + boost::current_exception_diagnostic_information() };
      }
 }
 
 
+void fromCbor( const Bytes& cbor, Cwt& cwt )
+{
+     using namespace std::string_literals;
+     try
+     {
+          const auto parsed = nlohmann::json::from_cbor( cbor );
+          if( not parsed.is_array() or parsed.size() != 3u )
+          {
+               throw CwtError{ "bad CWT format" };
+          }
+          parsed[ 0 ].get_to( cwt.header );
+          parsed[ 1 ].get_to( cwt.payload );
+          parsed[ 2 ].get_to( cwt.signature );
+     }
+     catch( const nlohmann::json::exception& e )
+     {
+          throw CwtParsingError{ "CWT parsing error: "s + e.what() };
+     }
+     catch( ... )
+     {
+          throw CwtParsingError{ "CWT unknown parsing error: "s
+               + boost::current_exception_diagnostic_information() };
+     }
+}
+
+
+} // namespace cbor_convert
 } // namespace internal
 } // namespace {anonymous}
 
 
-Cwt Cwt::fromCbor( const Bytes& cbor )
+Cwt::Cwt( const Bytes& cbor )
 {
-     try
-     {
-          auto parsed = nlohmann::json::from_cbor( cbor );
-          if( parsed.is_array() and parsed.size() != 3u )
-          {
-               throw CwtError{ "bad CWT format" };
-          }
-          Cwt cwt;
-          parsed[ 0 ].get_to( cwt.header );
-          parsed[ 1 ].get_to( cwt.payload );
-          parsed[ 2 ].get_to( cwt.signature );
-          return cwt;
-     }
-     catch( ... )
-     {
-          internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
-}
-
-
-Bytes Cwt::toCbor()
-{
-     try
-     {
-          return nlohmann::json::to_cbor({
-               nlohmann::json::binary( header )
-               , nlohmann::json::binary( payload )
-               , nlohmann::json::binary( signature )
-               });
-     }
-     catch( ... )
-     {
-          internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
+     internal::cbor_convert::fromCbor( cbor, *this );
 }
 
 
@@ -345,108 +333,15 @@ Bytes Cwt::makeTbsBlock() const
 }
 
 
-AuthConsentRequest::Header
-AuthConsentRequest::Header::fromCbor( const Bytes& cbor )
+AuthConsentRequest::Header::Header( const Bytes& cbor )
 {
-     try
-     {
-          AuthConsentRequest::Header header;
-          nlohmann::json::from_cbor( cbor ).get_to( header );
-          return header;
-     }
-     catch( ... )
-     {
-          internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
+     internal::cbor_convert::fromCbor( cbor, *this );
 }
 
 
-Bytes AuthConsentRequest::Header::toCbor()
+AuthConsentRequest::Payload::Payload( const Bytes& cbor )
 {
-     try
-     {
-          return nlohmann::json::to_cbor( *this );
-     }
-     catch( ... )
-     {
-          internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
-}
-
-
-AuthConsentRequest::Payload
-AuthConsentRequest::Payload::fromCbor( const Bytes& cbor )
-{
-     try
-     {
-          Payload payload;
-          nlohmann::json::from_cbor( cbor ).get_to( payload );
-          return payload;
-     }
-     catch( ... )
-     {
-          internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
-}
-
-
-Bytes AuthConsentRequest::Payload::toCbor()
-{
-     try
-     {
-          return nlohmann::json::to_cbor( *this );
-     }
-     catch( ... )
-     {
-          internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
-}
-
-
-AuthConsentResponse::Payload
-AuthConsentResponse::Payload::fromCbor( const Bytes& cbor )
-{
-     try
-     {
-          Payload payload;
-          nlohmann::json::from_cbor( cbor ).get_to( payload );
-          return payload;
-     }
-     catch( ... )
-     {
-          internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
-}
-
-
-Bytes AuthConsentResponse::Payload::toCbor()
-{
-     try
-     {
-          return nlohmann::json::to_cbor( *this );
-     }
-     catch( ... )
-     {
-          internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
+     internal::cbor_convert::fromCbor( cbor, *this );
 }
 
 
@@ -461,70 +356,34 @@ bool lifetimeIsValid(
 }
 
 
-AuthConsentRequest AuthConsentRequest::fromCbor( const Bytes& header, const Bytes& payload )
+AuthConsentRequest::AuthConsentRequest( const Cwt& cwt )
+     : AuthConsentRequest{ cwt.header, cwt.payload }
+{}
+
+
+AuthConsentRequest::AuthConsentRequest( const Bytes& header, const Bytes& payload )
+     : header{ header }
+     , payload{ payload }
+{}
+
+
+AuthConsentResponse::Header::Header( const Bytes& cbor )
 {
-     try
-     {
-          AuthConsentRequest request;
-          request.header = Header::fromCbor( header );
-          request.payload = Payload::fromCbor( payload );
-          return request;
-     }
-     catch( ... )
-     {
-           internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
+     internal::cbor_convert::fromCbor( cbor, *this );
 }
 
 
-AuthConsentRequest AuthConsentRequest::fromCwt( const Cwt& cwt )
+AuthConsentResponse::Payload::Payload( const Bytes& cbor )
 {
-     return AuthConsentRequest::fromCbor( cwt.header, cwt.payload );
+     internal::cbor_convert::fromCbor( cbor, *this );
 }
 
 
-AuthConsentResponse AuthConsentResponse::fromCbor( const Bytes& header, const Bytes& payload )
-{
-     try
-     {
-          AuthConsentResponse request;
-          request.header = Header::fromCbor( header );
-          request.payload = Payload::fromCbor( payload );
-          return request;
-     }
-     catch( ... )
-     {
-           internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
-}
+AuthConsentResponse::AuthConsentResponse( const Cwt& cwt )
+     : AuthConsentResponse{ cwt.header, cwt.payload }
+{}
 
-
-AuthConsentResponse AuthConsentResponse::fromCwt( const Cwt& cwt )
-{
-     return AuthConsentResponse::fromCbor( cwt.header, cwt.payload );
-}
-
-
-AuthConsentResponse::Header
-AuthConsentResponse::Header::fromCbor( const Bytes& cbor )
-{
-     try
-     {
-          AuthConsentResponse::Header header;
-          nlohmann::json::from_cbor( cbor ).get_to( header );
-          return header;
-     }
-     catch( ... )
-     {
-          internal::translateExceptions();
-     }
-     /// Never reached code:
-     /// only for suppress compiler warnings!
-     return {};
-}
+AuthConsentResponse::AuthConsentResponse( const Bytes& header, const Bytes& payload )
+     : header{ header }
+     , payload{ payload }
+{}

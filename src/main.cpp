@@ -71,8 +71,8 @@ int main()
      try
      {
           const auto cborBin = boost::algorithm::unhex( cborResp );
-          const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
-          const auto parsed = AuthConsentResponse::fromCwt( cwt );
+          const Cwt cwt({ cborBin.cbegin(), cborBin.cend() });
+          const AuthConsentResponse parsed{ cwt };
 
           std::cout << parsed.header << '\n';
           std::cout << parsed.payload << '\n';
