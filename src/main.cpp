@@ -70,11 +70,12 @@ int main()
 {
      try
      {
-          const auto cborBin = boost::algorithm::unhex( cbor );
+          const auto cborBin = boost::algorithm::unhex( cborResp );
           const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
+          const auto parsed = AuthConsentResponse::fromCwt( cwt );
 
-          std::cout << std::setw( 2 ) << AuthConsentRequest::Header::fromCbor( cwt.header ) << '\n';
-          std::cout << std::setw( 2 ) << AuthConsentRequest::Payload::fromCbor( cwt.payload ) << '\n';
+          std::cout << parsed.header << '\n';
+          std::cout << parsed.payload << '\n';
           std::cout << "Signature:\n  " << cwt.signature << '\n';
      }
      catch( ... )

@@ -86,37 +86,50 @@ struct AuthConsentRequest {
 };
 
 
-struct ResponsePayload
-{
-     static ResponsePayload getParsed( const Bytes& cbor );
+struct AuthConsentResponse {
+     struct Header {
+          static Header fromCbor( const Bytes& cbor );
+          Bytes toCbor();
 
-     /// Сохраненный исходный CBOR для проверки подписи и прочих нужд
-     const Bytes raw;
+          /// Обязательные стандартизированные параметры заголовка
+          std::string typ;
+          std::string alg;
+          Bytes x5c;
 
-     /// Случайные числа для защиты от атак межсайтовых запросов и повторного воспроизведения
-     Bytes cti;
-     Bytes req_cti;
+          /// Обязательные нестандартизированные параметры заголовка
+          int ver;
+          std::string sbt;
+     };
+     struct Payload
+     {
+          static Payload fromCbor( const Bytes& cbor );
+          Bytes toCbor();
 
-     /// Поля адресации токена
-     std::string iss;
-     std::string aud;
+          /// Случайные числа для защиты от атак межсайтовых запросов и повторного воспроизведения
+          Bytes cti;
+          Bytes req_cti;
 
-     /// Сроки действия токена
-     std::time_t iat;
-     std::time_t exp;
+          /// Поля адресации токена
+          std::string iss;
+          std::string aud;
 
-     /// Обязательные параметры токена ответа на запрос разрешений/согласий конечного пользователя
-     Bytes sub;
-     std::string client_id;
-     ObjectOf< std::string > resource;
-     OptionalObjectOf< std::string > responsed_consent_list;
-     ObjectOf< Bytes > user_device;
+          /// Сроки действия токена
+          std::time_t iat;
+          std::time_t exp;
 
-     /// Обязательные параметры для построения цепочки доверия
-     ObjectOf< Bytes > urn_esia_trust;
+          /// Обязательные параметры токена ответа на запрос разрешений/согласий конечного пользователя
+          Bytes sub;
+          std::string client_id;
+          SequenceOf< std::string > resource;
+          SequenceOf< std::string > responsed_consent_list;
 
-private:
-     explicit ResponsePayload( const Bytes& cbor )
-          : raw{ cbor }
-     {}
+          /// Обязательные параметры для построения цепочки доверия
+          ObjectOf< Bytes > urn_esia_trust;
+     };
+
+     Header header;
+     Payload payload;
+
+     static AuthConsentResponse fromCbor( const Bytes& headerCbor, const Bytes& payloadCbor );
+     static AuthConsentResponse fromCwt( const Cwt& );
 };

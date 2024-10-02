@@ -39,7 +39,19 @@ std::ostream& operator<<( std::ostream& os, const AuthConsentRequest::Payload& p
 }
 
 
-std::ostream& operator<<( std::ostream& os, const ResponsePayload& payload )
+std::ostream& operator<<( std::ostream& os, const AuthConsentResponse::Header& header )
+{
+     return os
+          << "Header:"
+          << "\n  typ: " << header.typ
+          << "\n  alg: " << header.alg
+          << "\n  x5c: " << header.x5c
+          << "\n  ver: " << header.ver
+          << "\n  sbt: " << header.sbt;
+}
+
+
+std::ostream& operator<<( std::ostream& os, const AuthConsentResponse::Payload& payload )
 {
      return os
           << "ResponsePayload:"
@@ -53,7 +65,6 @@ std::ostream& operator<<( std::ostream& os, const ResponsePayload& payload )
           << "\n  client_id: " << payload.client_id
           << "\n  resource: " << payload.resource
           << "\n  requested_consent_list: " << payload.responsed_consent_list
-          << "\n  user_device: " << payload.user_device
           << "\n  urn_esia_trust: " << payload.urn_esia_trust
           ;
 }

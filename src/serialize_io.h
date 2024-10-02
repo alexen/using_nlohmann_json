@@ -7,4 +7,6 @@
 
 std::ostream& operator<<( std::ostream&, const AuthConsentRequest::Header& );
 std::ostream& operator<<( std::ostream&, const AuthConsentRequest::Payload& );
-std::ostream& operator<<( std::ostream&, const ResponsePayload& );
+
+std::ostream& operator<<( std::ostream&, const AuthConsentResponse::Header& );
+std::ostream& operator<<( std::ostream&, const AuthConsentResponse::Payload& );
