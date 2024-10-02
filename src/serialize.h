@@ -1,14 +1,14 @@
 #pragma once
 
-#include <ctime>
-
-#include <nlohmann/json_fwd.hpp>
-
 #include "json_types.h"
 
 
 struct Header
 {
+     static Header getParsed( Bytes cbor );
+
+     const Bytes raw;
+
      /// Обязательные стандартизированные параметры заголовка
      std::string typ;
      std::string alg;
@@ -17,15 +17,20 @@ struct Header
      /// Обязательные нестандартизированные параметры заголовка
      std::string sbt;
      int ver;
+
+private:
+     explicit Header( Bytes&& cbor )
+          : raw{ std::move( cbor ) }
+     {}
 };
-
-
-void from_json( const nlohmann::json&, Header& );
-void to_json( nlohmann::json&, const Header& );
 
 
 struct RequestPayload
 {
+     static RequestPayload getParsed( Bytes cbor );
+
+     const Bytes raw;
+
      /// Случайные числа для защиты от атак межсайтовых запросов и повторного воспроизведения
      Bytes cti;
      Bytes req_cti;
@@ -48,15 +53,20 @@ struct RequestPayload
 
      /// Обязательные параметры для построения цепочки доверия
      OptionalObjectOf< Bytes > urn_esia_trust;
+
+private:
+     explicit RequestPayload( Bytes&& cbor )
+          : raw{ std::move( cbor ) }
+     {}
 };
-
-
-void from_json( const nlohmann::json&, RequestPayload& );
-void to_json( nlohmann::json&, const RequestPayload& );
 
 
 struct ResponsePayload
 {
+     static ResponsePayload getParsed( Bytes cbor );
+
+     const Bytes raw;
+
      /// Случайные числа для защиты от атак межсайтовых запросов и повторного воспроизведения
      Bytes cti;
      Bytes req_cti;
@@ -78,8 +88,9 @@ struct ResponsePayload
 
      /// Обязательные параметры для построения цепочки доверия
      ObjectOf< Bytes > urn_esia_trust;
+
+private:
+     explicit ResponsePayload( Bytes&& cbor )
+          : raw{ std::move( cbor ) }
+     {}
 };
-
-
-void from_json( const nlohmann::json&, ResponsePayload& );
-void to_json( nlohmann::json&, const ResponsePayload& );

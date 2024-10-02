@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctime>
 #include <cstdint>
 #include <map>
 #include <vector>

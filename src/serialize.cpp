@@ -203,3 +203,27 @@ void to_json( nlohmann::json& json, const ResponsePayload& payload )
      JSON_PUT( json, payload, resource );
      JSON_PUT_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
 }
+
+
+Header Header::getParsed( Bytes cbor )
+{
+     Header header{ std::move( cbor ) };
+     nlohmann::json::from_cbor( header.raw ).get_to( header );
+     return header;
+}
+
+
+RequestPayload RequestPayload::getParsed( Bytes cbor )
+{
+     RequestPayload payload{ std::move( cbor ) };
+     nlohmann::json::from_cbor( payload.raw ).get_to( payload );
+     return payload;
+}
+
+
+ResponsePayload ResponsePayload::getParsed( Bytes cbor )
+{
+     ResponsePayload payload{ std::move( cbor ) };
+     nlohmann::json::from_cbor( payload.raw ).get_to( payload );
+     return payload;
+}
