@@ -120,35 +120,45 @@ void to_json( nlohmann::json& json, const Header& header )
 
 void from_json( const nlohmann::json& json, RequestPayload& payload )
 {
+     JSON_GET( json, payload, cti );
+     JSON_GET( json, payload, req_cti );
+
+     JSON_GET( json, payload, iss );
      JSON_GET( json, payload, aud );
+
+     JSON_GET( json, payload, iat );
+     JSON_GET( json, payload, exp );
+
      JSON_GET( json, payload, client_id );
      JSON_GET( json, payload, client_name );
      JSON_GET( json, payload, client_ogrnip );
-     JSON_GET( json, payload, cti );
-     JSON_GET( json, payload, exp );
-     JSON_GET( json, payload, iat );
-     JSON_GET( json, payload, iss );
-     JSON_GET( json, payload, req_cti );
+
+     JSON_GET( json, payload, resource );
      JSON_GET_IF_PRESENT( json, payload, obtained_consent_list );
      JSON_GET_IF_PRESENT( json, payload, requested_consent_list );
-     JSON_GET_IF_PRESENT( json, payload, resource );
+
      JSON_GET_IF_PRESENT_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
 }
 
 
 void to_json( nlohmann::json& json, const RequestPayload& payload )
 {
+     JSON_PUT( json, payload, cti );
+     JSON_PUT( json, payload, req_cti );
+
+     JSON_PUT( json, payload, iss );
      JSON_PUT( json, payload, aud );
+
+     JSON_PUT( json, payload, iat );
+     JSON_PUT( json, payload, exp );
+
      JSON_PUT( json, payload, client_id );
      JSON_PUT( json, payload, client_name );
      JSON_PUT( json, payload, client_ogrnip );
-     JSON_PUT( json, payload, cti );
-     JSON_PUT( json, payload, exp );
-     JSON_PUT( json, payload, iat );
-     JSON_PUT( json, payload, iss );
-     JSON_PUT( json, payload, req_cti );
+
+     JSON_PUT( json, payload, resource );
      JSON_PUT( json, payload, obtained_consent_list );
      JSON_PUT( json, payload, requested_consent_list );
-     JSON_PUT( json, payload, resource );
+
      JSON_PUT_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
 }
