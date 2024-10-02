@@ -4,8 +4,8 @@
 
 
 struct Header;
-struct Payload;
+struct RequestPayload;
 
 
 std::ostream& operator<<( std::ostream&, const Header& );
-std::ostream& operator<<( std::ostream&, const Payload& );
+std::ostream& operator<<( std::ostream&, const RequestPayload& );

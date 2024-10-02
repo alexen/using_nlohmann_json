@@ -17,7 +17,7 @@ std::ostream& operator<<( std::ostream& os, const Header& header )
 }
 
 
-std::ostream& operator<<( std::ostream& os, const Payload& payload )
+std::ostream& operator<<( std::ostream& os, const RequestPayload& payload )
 {
      return os
           << "Payload:"

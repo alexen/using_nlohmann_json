@@ -21,7 +21,7 @@ void from_json( const nlohmann::json&, Header& );
 void to_json( nlohmann::json&, const Header& );
 
 
-struct Payload
+struct RequestPayload
 {
      SequenceOf< std::string > aud;
      std::string client_id;
@@ -39,5 +39,5 @@ struct Payload
 };
 
 
-void from_json( const nlohmann::json&, Payload& );
-void to_json( nlohmann::json&, const Payload& );
+void from_json( const nlohmann::json&, RequestPayload& );
+void to_json( nlohmann::json&, const RequestPayload& );

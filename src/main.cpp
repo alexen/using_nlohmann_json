@@ -47,7 +47,7 @@ int main()
           std::cout << std::setw( 2 ) <<
                 nlohmann::json::from_cbor( parsed[ 0 ].get_binary() ).get< Header >() << '\n';
           std::cout << std::setw( 2 ) <<
-                nlohmann::json::from_cbor( parsed[ 1 ].get_binary() ).get< Payload >() << '\n';
+                nlohmann::json::from_cbor( parsed[ 1 ].get_binary() ).get< RequestPayload >() << '\n';
           std::cout << "Signature:\n  " << parsed[ 2 ].get_binary() << '\n';
      }
      catch( ... )

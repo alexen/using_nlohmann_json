@@ -118,7 +118,7 @@ void to_json( nlohmann::json& json, const Header& header )
 }
 
 
-void from_json( const nlohmann::json& json, Payload& payload )
+void from_json( const nlohmann::json& json, RequestPayload& payload )
 {
      JSON_GET( json, payload, aud );
      JSON_GET( json, payload, client_id );
@@ -136,7 +136,7 @@ void from_json( const nlohmann::json& json, Payload& payload )
 }
 
 
-void to_json( nlohmann::json& json, const Payload& payload )
+void to_json( nlohmann::json& json, const RequestPayload& payload )
 {
      JSON_PUT( json, payload, aud );
      JSON_PUT( json, payload, client_id );
