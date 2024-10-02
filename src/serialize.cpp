@@ -1,31 +1,17 @@
 #include "serialize.h"
 
-#include <optional>
+#include <boost/optional/optional.hpp>
+#include <boost/algorithm/hex.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 
 #include <nlohmann/json.hpp>
-
-#include "json_types_io.h"
 
 
 /// Поддержка сериализации third-party типов
 /// @see https://github.com/nlohmann/json#how-do-i-convert-third-party-types
 ///
+/// @note Должны быть в глобальном пространстве имен.
 namespace nlohmann {
-
-
-template<>
-struct adl_serializer< std::filesystem::path >
-{
-     static void to_json( json& j, const std::filesystem::path& path )
-     {
-          j = path.string();
-     }
-
-     static void from_json( const json& j, std::filesystem::path& path )
-     {
-          path = j.get< std::string >();
-     }
-};
 
 
 template<>
@@ -44,9 +30,9 @@ struct adl_serializer< Bytes >
 
 
 template< typename T >
-struct adl_serializer< std::optional< T > >
+struct adl_serializer< boost::optional< T > >
 {
-     static void to_json( json& j, const std::optional< T >& value )
+     static void to_json( json& j, const boost::optional< T >& value )
      {
           if( value )
           {
@@ -54,7 +40,7 @@ struct adl_serializer< std::optional< T > >
           }
      }
 
-     static void from_json( const json& j, std::optional< T >& value )
+     static void from_json( const json& j, boost::optional< T >& value )
      {
           if( !j.is_null() )
           {
@@ -62,7 +48,7 @@ struct adl_serializer< std::optional< T > >
           }
           else
           {
-               value = std::nullopt;
+               value = boost::none;
           }
      }
 };
@@ -71,6 +57,8 @@ struct adl_serializer< std::optional< T > >
 } // namespace nlohmann
 
 
+/// @note Должны быть в глобальном пространстве имен.
+///
 #define JSON_GET_OPTIONAL_EXT( from_json, to_model, field_name, json_value_name )  \
      do {                                                                            \
           const auto found = from_json.find( json_value_name );                      \
@@ -96,6 +84,54 @@ struct adl_serializer< std::optional< T > >
 #define JSON_PUT( to_json, from_model, field_name ) \
      JSON_PUT_EXT( to_json, from_model, field_name, #field_name )
 
+
+static std::ostream& operator<<( std::ostream& os, const Bytes& bytes )
+{
+     boost::algorithm::hex_lower( bytes.cbegin(), bytes.cend(),
+          std::ostreambuf_iterator< char >{ os } );
+     return os;
+}
+
+
+template< typename T >
+static std::ostream& operator<<( std::ostream& os, const SequenceOf< T >& seq )
+{
+     const char* sep= "";
+     for( auto&& each: seq )
+     {
+          os << sep << each;
+          sep = ", ";
+     }
+     return os;
+}
+
+
+template< typename ValueT >
+static std::ostream& operator<<( std::ostream& os, const ObjectOf< ValueT >& kvObj )
+{
+     const char* sep = "";
+     for( auto&& each: kvObj )
+     {
+          os << sep << '{' << std::quoted( each.first ) << ": \"" << each.second << "\"}";
+          sep = ", ";
+     }
+     return os;
+}
+
+
+template< typename T >
+static std::ostream& operator<<( std::ostream& os, const boost::optional< T >& opt )
+{
+     if( opt )
+     {
+          os << *opt;
+     }
+     else
+     {
+          os << "--";
+     }
+     return os;
+}
 
 
 void from_json( const nlohmann::json& json, Header& header )
@@ -179,7 +215,7 @@ void from_json( const nlohmann::json& json, ResponsePayload& payload )
      JSON_GET( json, payload, client_id );
 
      JSON_GET( json, payload, resource );
-     JSON_GET_OPTIONAL( json, payload, requested_consent_list );
+     JSON_GET_OPTIONAL( json, payload, responsed_consent_list );
      JSON_GET( json, payload, user_device );
 
      JSON_GET_EXT( json, payload, urn_esia_trust, "urn:esia:trust" );
@@ -205,25 +241,139 @@ void to_json( nlohmann::json& json, const ResponsePayload& payload )
 }
 
 
-Header Header::getParsed( Bytes cbor )
+namespace {
+namespace internal {
+
+
+void translateExceptions()
 {
-     Header header{ std::move( cbor ) };
-     nlohmann::json::from_cbor( header.raw ).get_to( header );
-     return header;
+     using namespace std::string_literals;
+
+     try { throw; }
+     catch( const nlohmann::json::parse_error& e )
+     {
+          throw CwtParsingError{ "CWT parsing error: "s + e.what() };
+     }
+     catch( const std::exception&e )
+     {
+          throw CwtError{ "CWT error: "s + e.what() };
+     }
+     catch( ... )
+     {
+          throw CwtError{ "unexpected error: "
+               + boost::current_exception_diagnostic_information() };
+     }
 }
 
 
-RequestPayload RequestPayload::getParsed( Bytes cbor )
+} // namespace internal
+} // namespace {anonymous}
+
+
+Cwt Cwt::getParsed( const Bytes& cbor )
 {
-     RequestPayload payload{ std::move( cbor ) };
-     nlohmann::json::from_cbor( payload.raw ).get_to( payload );
-     return payload;
+     try
+     {
+          auto parsed = nlohmann::json::from_cbor( cbor );
+          if( parsed.is_array() and parsed.size() != 3u )
+          {
+               throw CwtError{ "bad CWT format" };
+          }
+
+          /// Сохраняем ссылки на элементы чтобы лишний раз не дергать
+          /// операторы индексации
+          const auto& header = parsed[ 0 ];
+          const auto& payload = parsed[ 1 ];
+          const auto& signature = parsed[ 2 ];
+
+          const bool expected =
+               header.is_binary()
+               and payload.is_binary()
+               and signature.is_binary();
+
+          if( not expected )
+          {
+               throw CwtError{ "bad CWT parts format" };
+          }
+          return Cwt{
+               header.get_binary()
+               , payload.get_binary()
+               , signature.get_binary()
+               };
+     }
+     catch( ... )
+     {
+          internal::translateExceptions();
+     }
+     BOOST_ASSERT( !"unreachable code (to suppress compiler warnings)" );
 }
 
 
-ResponsePayload ResponsePayload::getParsed( Bytes cbor )
+Bytes Cwt::makeTbsBlock() const
 {
-     ResponsePayload payload{ std::move( cbor ) };
-     nlohmann::json::from_cbor( payload.raw ).get_to( payload );
-     return payload;
+     return nlohmann::json::to_cbor({
+          "Signature1"
+          , nlohmann::json::binary( header )
+          , nlohmann::json::binary( {} )
+          , nlohmann::json::binary( payload )
+     });
+}
+
+
+Header Header::getParsed( const Bytes& cbor )
+{
+     try
+     {
+          Header header{ cbor };
+          nlohmann::json::from_cbor( header.raw ).get_to( header );
+          return header;
+     }
+     catch( ... )
+     {
+          internal::translateExceptions();
+     }
+     BOOST_ASSERT( !"unreachable code (to suppress compiler warnings)" );
+}
+
+
+RequestPayload RequestPayload::getParsed( const Bytes& cbor )
+{
+     try
+     {
+          RequestPayload payload{ cbor };
+          nlohmann::json::from_cbor( payload.raw ).get_to( payload );
+          return payload;
+     }
+     catch( ... )
+     {
+          internal::translateExceptions();
+     }
+     BOOST_ASSERT( !"unreachable code (to suppress compiler warnings)" );
+}
+
+
+ResponsePayload ResponsePayload::getParsed( const Bytes& cbor )
+{
+     try
+     {
+          ResponsePayload payload{ cbor };
+          nlohmann::json::from_cbor( payload.raw ).get_to( payload );
+          return payload;
+     }
+     catch( ... )
+     {
+          internal::translateExceptions();
+     }
+     BOOST_ASSERT( !"unreachable code (to suppress compiler warnings)" );
+}
+
+
+bool lifetimeIsValid(
+     std::time_t iat
+     , std::time_t exp
+     , std::time_t now
+     , std::time_t acceptableIatDeviation
+)
+{
+     return ((iat - acceptableIatDeviation) <= now) and now < exp;
 }

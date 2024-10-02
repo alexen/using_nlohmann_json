@@ -8,31 +8,51 @@
 std::ostream& operator<<( std::ostream& os, const Header& header )
 {
      return os
-          << "Header: "
+          << "Header:"
           << "\n  typ: " << header.typ
           << "\n  alg: " << header.alg
           << "\n  x5tSt256: " << header.x5tSt256
-          << "\n  sbt: " << header.sbt
-          << "\n  ver: " << header.ver;
+          << "\n  ver: " << header.ver
+          << "\n  sbt: " << header.sbt;
 }
 
 
 std::ostream& operator<<( std::ostream& os, const RequestPayload& payload )
 {
      return os
-          << "Payload:"
+          << "RequestPayload:"
+          << "\n  cti: " << payload.cti
+          << "\n  req_cti: " << payload.req_cti
+          << "\n  iss: " << payload.iss
           << "\n  aud: " << payload.aud
+          << "\n  iat: " << payload.iat
+          << "\n  exp: " << payload.exp
           << "\n  client_id: " << payload.client_id
           << "\n  client_name: " << payload.client_name
-          << "\n  client_ogrnip: " << payload.client_ogrnip
-          << "\n  cti: " << payload.cti
-          << "\n  exp: " << payload.exp
-          << "\n  iat: " << payload.iat
-          << "\n  iss: " << payload.iss
-          << "\n  req_cti: " << payload.req_cti
+          << "\n  client_ogrn: " << payload.client_ogrnip
+          << "\n  resource: " << payload.resource
           << "\n  obtained_consent_list: " << payload.obtained_consent_list
           << "\n  requested_consent_list: " << payload.requested_consent_list
+          << "\n  urn_esia_trust: " << payload.urn_esia_trust
+          ;
+}
+
+
+std::ostream& operator<<( std::ostream& os, const ResponsePayload& payload )
+{
+     return os
+          << "ResponsePayload:"
+          << "\n  cti: " << payload.cti
+          << "\n  req_cti: " << payload.req_cti
+          << "\n  iss: " << payload.iss
+          << "\n  aud: " << payload.aud
+          << "\n  iat: " << payload.iat
+          << "\n  exp: " << payload.exp
+          << "\n  sub: " << payload.sub
+          << "\n  client_id: " << payload.client_id
           << "\n  resource: " << payload.resource
+          << "\n  requested_consent_list: " << payload.responsed_consent_list
+          << "\n  user_device: " << payload.user_device
           << "\n  urn_esia_trust: " << payload.urn_esia_trust
           ;
 }

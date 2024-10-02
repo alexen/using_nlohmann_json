@@ -41,7 +41,7 @@ inline std::ostream& operator<<( std::ostream& os, const ObjectOf< ValueT >& kvO
 
 
 template< typename T >
-inline std::ostream& operator<<( std::ostream& os, const std::optional< T >& opt )
+inline std::ostream& operator<<( std::ostream& os, const boost::optional< T >& opt )
 {
      if( opt )
      {
