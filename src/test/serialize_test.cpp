@@ -112,40 +112,131 @@ BOOST_AUTO_TEST_CASE( ParseCryptoConsentRequestCwt )
      const auto cborBin = boost::algorithm::unhex( cborHex );
 
      const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
-     const auto request = AuthConsentRequest::fromCwt( cwt );
+     const auto parsed = AuthConsentRequest::fromCwt( cwt );
 
-     BOOST_TEST( request.header.typ               == "CWT" );
-     BOOST_TEST( request.header.alg               == "GOST341012" );
-     BOOST_TEST( asHex( request.header.x5tSt256 ) == "1E0E64B7E2210E34F19293328E3CE191180E39A37E25A9B9F23A724D91F72553" );
-     BOOST_TEST( request.header.sbt               == "crypto_consent_req" );
-     BOOST_TEST( request.header.ver               == 1 );
-     BOOST_TEST( asHex( request.payload.cti )                                                    == "911E36FA217419310B0329B04B830A06AF76D103A5E9A3223ED24DBA92472887" );
-     BOOST_TEST( asHex( request.payload.req_cti )                                                == "C5DCB61DF15D70CC17FB6E74F5BCF6710D1AC376D03D9B77C4973F92BA1472C7" );
-     BOOST_TEST( request.payload.iss                                                             == "http://esia.gosuslugi.ru" );
-     BOOST_TEST( request.payload.aud.size()                                                      == 1u );
-     BOOST_TEST( request.payload.aud[ 0 ]                                                        == "mpauth" );
-     BOOST_TEST( request.payload.iat                                                             == 1727784317 );
-     BOOST_TEST( request.payload.exp                                                             == 1727784617 );
-     BOOST_TEST( request.payload.client_id                                                       == "ya.ru" );
-     BOOST_TEST( request.payload.client_name                                                     == "client1" );
-     BOOST_TEST( request.payload.client_ogrnip                                                   == "1132074507355" );
-     BOOST_TEST( request.payload.resource.size()                                                 == 1u );
-     BOOST_TEST( request.payload.resource.count( "server1" )                                     != 0u );
-     BOOST_TEST( request.payload.resource.at( "server1" )                                        == "server1 name" );
-     BOOST_TEST( !!request.payload.obtained_consent_list );
-     BOOST_TEST( request.payload.obtained_consent_list->size()                                   == 1u );
-     BOOST_TEST( request.payload.obtained_consent_list->count( "fullname" )                      != 0u );
-     BOOST_TEST( request.payload.obtained_consent_list->at( "fullname" )                         == "полное имя" );
-     BOOST_TEST( !!request.payload.requested_consent_list );
-     BOOST_TEST( request.payload.requested_consent_list->size()                                  == 1u );
-     BOOST_TEST( request.payload.requested_consent_list->count( "birthdate" )                    != 0u );
-     BOOST_TEST( request.payload.requested_consent_list->at( "birthdate" )                       == "Дата рождения" );
-     BOOST_TEST( !!request.payload.urn_esia_trust );
-     BOOST_TEST( request.payload.urn_esia_trust->size()                                          == 1u );
-     BOOST_TEST( request.payload.urn_esia_trust->count( "urn:esia:trust:crypto_auth_resp" )      != 0u );
-     BOOST_TEST( asHex( request.payload.urn_esia_trust->at( "urn:esia:trust:crypto_auth_resp" ) ) == "21CBB4569DE6092FD6AD3968B08F65A07798AFB8865A5D783E81E4C3A133F70B" );
+     BOOST_TEST( parsed.header.typ == "CWT" );
+     BOOST_TEST( parsed.header.alg == "GOST341012" );
+     BOOST_TEST( asHex( parsed.header.x5tSt256 )
+          == "1E0E64B7E2210E34F19293328E3CE191180E39A37E25A9B9F23A724D91F72553" );
+     BOOST_TEST( parsed.header.sbt == "crypto_consent_req" );
+     BOOST_TEST( parsed.header.ver == 1 );
+     BOOST_TEST( asHex( parsed.payload.cti )
+          == "911E36FA217419310B0329B04B830A06AF76D103A5E9A3223ED24DBA92472887" );
+     BOOST_TEST( asHex( parsed.payload.req_cti )
+          == "C5DCB61DF15D70CC17FB6E74F5BCF6710D1AC376D03D9B77C4973F92BA1472C7" );
+     BOOST_TEST( parsed.payload.iss == "http://esia.gosuslugi.ru" );
+     BOOST_TEST( parsed.payload.aud.size() == 1u );
+     BOOST_TEST( parsed.payload.aud[ 0 ] == "mpauth" );
+     BOOST_TEST( parsed.payload.iat == 1727784317 );
+     BOOST_TEST( parsed.payload.exp == 1727784617 );
+     BOOST_TEST( parsed.payload.client_id == "ya.ru" );
+     BOOST_TEST( parsed.payload.client_name == "client1" );
+     BOOST_TEST( parsed.payload.client_ogrnip == "1132074507355" );
+     BOOST_TEST( parsed.payload.resource.size() == 1u );
+     BOOST_TEST( parsed.payload.resource.count( "server1" ) != 0u );
+     BOOST_TEST( parsed.payload.resource.at( "server1" ) == "server1 name" );
+     BOOST_TEST( !!parsed.payload.obtained_consent_list );
+     BOOST_TEST( parsed.payload.obtained_consent_list->size() == 1u );
+     BOOST_TEST( parsed.payload.obtained_consent_list->count( "fullname" ) != 0u );
+     BOOST_TEST( parsed.payload.obtained_consent_list->at( "fullname" ) == "полное имя" );
+     BOOST_TEST( !!parsed.payload.requested_consent_list );
+     BOOST_TEST( parsed.payload.requested_consent_list->size() == 1u );
+     BOOST_TEST( parsed.payload.requested_consent_list->count( "birthdate" ) != 0u );
+     BOOST_TEST( parsed.payload.requested_consent_list->at( "birthdate" ) == "Дата рождения" );
+     BOOST_TEST( !!parsed.payload.urn_esia_trust );
+     BOOST_TEST( parsed.payload.urn_esia_trust->size() == 1u );
+     BOOST_TEST( parsed.payload.urn_esia_trust->count( "urn:esia:trust:crypto_auth_resp" ) != 0u );
+     BOOST_TEST( asHex( parsed.payload.urn_esia_trust->at( "urn:esia:trust:crypto_auth_resp" ) )
+          == "21CBB4569DE6092FD6AD3968B08F65A07798AFB8865A5D783E81E4C3A133F70B" );
+     BOOST_TEST( asHex( cwt.signature )
+          == "B26FE713F164944F0F5A9E8D8EA99F94A69FC0F6554F59D56B72F492B97F76C262BDC5F"
+          "8C627EE9BAAF687CC129CC914448B2F3720A0265916D5EDE8EFDDED21" );
+}
+BOOST_AUTO_TEST_CASE( ParseCryptoConsentResponseCwt )
+{
+     static const std::string cborHex =
+          "835902a7a5637479706343575463616c676a474f53543334313031326378356359026b3082"
+          "026730820212a00302010202011e300c06082a8503070101030205003081d0310b30090603"
+          "550406130252553115301306035504080c0cd09cd0bed181d0bad0b2d0b031153013060355"
+          "04070c0cd09cd0bed181d0bad0b2d0b0311b3019060355040a0c12d090d09e20d0a0d0a220"
+          "d09bd0b0d0b1d1813111300f060355040b0c08d095d0a1d098d0903135303306035504030c"
+          "2cd0a2d0b5d181d182d0bed0b2d18bd0b920d0a3d0a620d095d0a1d098d09020d093d09ed0"
+          "a1d0a22032303132312c302a06092a864886f70d010901161d6d696b6861696c2e616c656b"
+          "73616e64726f764072746c6162732e7275301e170d3234303731353135343835385a170d32"
+          "37303431313135343835385a3043310b30090603550406130252553134303206035504030c"
+          "2b4944483631416f43795069666a3461625a353155703065574870754a6b43556d48576753"
+          "54786f493362413066301f06082a85030701010101301306072a85030202230106082a8503"
+          "07010102020343000440ad9121a0a5271c20881a7f4da15c5a735dfc67995438448d7d1c84"
+          "d6ba1cb02cec6a3da6b740975a436446eebe42f8a6275b317438f507fcebb9df9d725a8509"
+          "a35a3058301f0603551d23041830168014f088280f33fc4d3a1e4be972a821af95bd05d91a"
+          "30090603551d1304023000300b0603551d0f0404030203f8301d0603551d25041630140608"
+          "2b0601050507030206082b06010505070304300c06082a8503070101030205000341003a47"
+          "59cbfd47b474e8f2846ceca35c023841407969672f47779249fe031708f005e1173651b660"
+          "1a7e34252e38ef9c66f29ca14c1ea7bd0102859346c474646a637665720163736274736372"
+          "7970746f5f636f6e73656e745f72657370590151ab63637469582024a8e0678460f26c5a11"
+          "b9e1f9226180f55f13a4b8eba9ee9b0ebb91ee7b601c677265715f637469582002811677a7"
+          "21166b6f7028da0af1d186b23676c96a20fd7714c67b721aa58c35636973736d706572736f"
+          "6e2e69642e6170706361756469706572736f6e2e6964636961741a66fd3142636578701a66"
+          "fd326e6373756258202031fad40a02c8f89f8f869b679d54a747961e9b899025261d68124f"
+          "1a08ddb069636c69656e745f6964746d6167617a696e2e6e61646976616e652e636f6d6872"
+          "65736f7572636581677365727665723176726573706f6e7365645f636f6e73656e745f6c69"
+          "737481696269727468646174656e75726e3a657369613a7472757374a1782175726e3a6573"
+          "69613a74727573743a63727970746f5f636f6e73656e745f72657158202e98cb43924c951b"
+          "dac303e62c6333ed21cab5cea1f20928e771dc69f59ce69858400d1f7c09e95df0f5658103"
+          "87e56f853a2ea857a9ba3c24339547319959316315ae6e6a65f0536c8200044d8b1b2c832a"
+          "be1c0276c9ed9cb74c7c03ddc4f2e005";
 
-     BOOST_TEST( asHex( cwt.signature ) == "B26FE713F164944F0F5A9E8D8EA99F94A69FC0F6554F59D56B72F492B97F76C262BDC5F8C627EE9BAAF687CC129CC914448B2F3720A0265916D5EDE8EFDDED21" );
+     const auto cborBin = boost::algorithm::unhex( cborHex );
+
+     const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
+     const auto parsed = AuthConsentResponse::fromCwt( cwt );
+
+     BOOST_TEST( parsed.header.typ == "CWT" );
+     BOOST_TEST( parsed.header.alg == "GOST341012" );
+     BOOST_TEST( asHex( parsed.header.x5c )
+          == "3082026730820212A00302010202011E300C06082A8503070101030205003081D03"
+          "10B30090603550406130252553115301306035504080C0CD09CD0BED181D0BAD0B2"
+          "D0B03115301306035504070C0CD09CD0BED181D0BAD0B2D0B0311B3019060355040"
+          "A0C12D090D09E20D0A0D0A220D09BD0B0D0B1D1813111300F060355040B0C08D095"
+          "D0A1D098D0903135303306035504030C2CD0A2D0B5D181D182D0BED0B2D18BD0B92"
+          "0D0A3D0A620D095D0A1D098D09020D093D09ED0A1D0A22032303132312C302A0609"
+          "2A864886F70D010901161D6D696B6861696C2E616C656B73616E64726F764072746"
+          "C6162732E7275301E170D3234303731353135343835385A170D3237303431313135"
+          "343835385A3043310B30090603550406130252553134303206035504030C2B49444"
+          "83631416F43795069666A3461625A353155703065574870754A6B43556D48576753"
+          "54786F493362413066301F06082A85030701010101301306072A850302022301060"
+          "82A850307010102020343000440AD9121A0A5271C20881A7F4DA15C5A735DFC6799"
+          "5438448D7D1C84D6BA1CB02CEC6A3DA6B740975A436446EEBE42F8A6275B317438F"
+          "507FCEBB9DF9D725A8509A35A3058301F0603551D23041830168014F088280F33FC"
+          "4D3A1E4BE972A821AF95BD05D91A30090603551D1304023000300B0603551D0F040"
+          "4030203F8301D0603551D250416301406082B0601050507030206082B0601050507"
+          "0304300C06082A8503070101030205000341003A4759CBFD47B474E8F2846CECA35"
+          "C023841407969672F47779249FE031708F005E1173651B6601A7E34252E38EF9C66"
+          "F29CA14C1EA7BD0102859346C474646A" );
+     BOOST_TEST( parsed.header.sbt == "crypto_consent_resp" );
+     BOOST_TEST( parsed.header.ver == 1 );
+     BOOST_TEST( asHex( parsed.payload.cti )
+          == "24A8E0678460F26C5A11B9E1F9226180F55F13A4B8EBA9EE9B0EBB91EE7B601C" );
+     BOOST_TEST( asHex( parsed.payload.req_cti )
+          == "02811677A721166B6F7028DA0AF1D186B23676C96A20FD7714C67B721AA58C35" );
+     BOOST_TEST( parsed.payload.iss == "person.id.app" );
+     BOOST_TEST( parsed.payload.aud == "person.id" );
+     BOOST_TEST( parsed.payload.iat == 1727869250 );
+     BOOST_TEST( parsed.payload.exp == 1727869550 );
+     BOOST_TEST( parsed.payload.client_id == "magazin.nadivane.com" );
+     BOOST_TEST( asHex( parsed.payload.sub )
+          == "2031FAD40A02C8F89F8F869B679D54A747961E9B899025261D68124F1A08DDB0" );
+     BOOST_TEST( parsed.payload.resource.size() == 1u );
+     BOOST_TEST( parsed.payload.resource[ 0 ] == "server1" );
+     BOOST_TEST( parsed.payload.responsed_consent_list.size() == 1u );
+     BOOST_TEST( parsed.payload.responsed_consent_list[ 0 ] == "birthdate" );
+     BOOST_TEST( parsed.payload.urn_esia_trust.size() == 1u );
+     BOOST_TEST( parsed.payload.urn_esia_trust.count( "urn:esia:trust:crypto_consent_req" ) != 0u );
+     BOOST_TEST( asHex( parsed.payload.urn_esia_trust.at( "urn:esia:trust:crypto_consent_req" ) )
+          == "2E98CB43924C951BDAC303E62C6333ED21CAB5CEA1F20928E771DC69F59CE698" );
+     BOOST_TEST( asHex( cwt.signature )
+          == "0D1F7C09E95DF0F565810387E56F853A2EA857A9BA3C24339547319959316315AE6E"
+          "6A65F0536C8200044D8B1B2C832ABE1C0276C9ED9CB74C7C03DDC4F2E005" );
 }
 BOOST_AUTO_TEST_CASE( CreateTbsCbor )
 {
