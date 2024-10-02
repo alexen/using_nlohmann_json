@@ -134,7 +134,7 @@ static std::ostream& operator<<( std::ostream& os, const boost::optional< T >& o
 }
 
 
-void from_json( const nlohmann::json& json, Header& header )
+void from_json( const nlohmann::json& json, AuthConsentRequest::Header& header )
 {
      JSON_GET( json, header, typ );
      JSON_GET( json, header, alg );
@@ -144,7 +144,7 @@ void from_json( const nlohmann::json& json, Header& header )
 }
 
 
-void to_json( nlohmann::json& json, const Header& header )
+void to_json( nlohmann::json& json, const AuthConsentRequest::Header& header )
 {
      JSON_PUT( json, header, typ );
      JSON_PUT( json, header, alg );
@@ -154,7 +154,7 @@ void to_json( nlohmann::json& json, const Header& header )
 }
 
 
-void from_json( const nlohmann::json& json, RequestPayload& payload )
+void from_json( const nlohmann::json& json, AuthConsentRequest::Payload& payload )
 {
      JSON_GET( json, payload, cti );
      JSON_GET( json, payload, req_cti );
@@ -177,7 +177,7 @@ void from_json( const nlohmann::json& json, RequestPayload& payload )
 }
 
 
-void to_json( nlohmann::json& json, const RequestPayload& payload )
+void to_json( nlohmann::json& json, const AuthConsentRequest::Payload& payload )
 {
      JSON_PUT( json, payload, cti );
      JSON_PUT( json, payload, req_cti );
@@ -270,7 +270,7 @@ void translateExceptions()
 } // namespace {anonymous}
 
 
-Cwt Cwt::getParsed( const Bytes& cbor )
+Cwt Cwt::fromCbor( const Bytes& cbor )
 {
      try
      {
@@ -279,33 +279,39 @@ Cwt Cwt::getParsed( const Bytes& cbor )
           {
                throw CwtError{ "bad CWT format" };
           }
-
-          /// Сохраняем ссылки на элементы чтобы лишний раз не дергать
-          /// операторы индексации
-          const auto& header = parsed[ 0 ];
-          const auto& payload = parsed[ 1 ];
-          const auto& signature = parsed[ 2 ];
-
-          const bool expected =
-               header.is_binary()
-               and payload.is_binary()
-               and signature.is_binary();
-
-          if( not expected )
-          {
-               throw CwtError{ "bad CWT parts format" };
-          }
-          return Cwt{
-               header.get_binary()
-               , payload.get_binary()
-               , signature.get_binary()
-               };
+          Cwt cwt;
+          parsed[ 0 ].get_to( cwt.header );
+          parsed[ 1 ].get_to( cwt.payload );
+          parsed[ 2 ].get_to( cwt.signature );
+          return cwt;
      }
      catch( ... )
      {
           internal::translateExceptions();
      }
-     BOOST_ASSERT( !"unreachable code (to suppress compiler warnings)" );
+     /// Never reached code:
+     /// only for suppress compiler warnings!
+     return {};
+}
+
+
+Bytes Cwt::toCbor()
+{
+     try
+     {
+          return nlohmann::json::to_cbor({
+               nlohmann::json::binary( header )
+               , nlohmann::json::binary( payload )
+               , nlohmann::json::binary( signature )
+               });
+     }
+     catch( ... )
+     {
+          internal::translateExceptions();
+     }
+     /// Never reached code:
+     /// only for suppress compiler warnings!
+     return {};
 }
 
 
@@ -320,35 +326,73 @@ Bytes Cwt::makeTbsBlock() const
 }
 
 
-Header Header::getParsed( const Bytes& cbor )
+AuthConsentRequest::Header
+AuthConsentRequest::Header::fromCbor( const Bytes& cbor )
 {
      try
      {
-          Header header{ cbor };
-          nlohmann::json::from_cbor( header.raw ).get_to( header );
+          Header header;
+          nlohmann::json::from_cbor( cbor ).get_to( header );
           return header;
      }
      catch( ... )
      {
           internal::translateExceptions();
      }
-     BOOST_ASSERT( !"unreachable code (to suppress compiler warnings)" );
+     /// Never reached code:
+     /// only for suppress compiler warnings!
+     return {};
 }
 
 
-RequestPayload RequestPayload::getParsed( const Bytes& cbor )
+Bytes AuthConsentRequest::Header::toCbor()
 {
      try
      {
-          RequestPayload payload{ cbor };
-          nlohmann::json::from_cbor( payload.raw ).get_to( payload );
+          return nlohmann::json::to_cbor( *this );
+     }
+     catch( ... )
+     {
+          internal::translateExceptions();
+     }
+     /// Never reached code:
+     /// only for suppress compiler warnings!
+     return {};
+}
+
+
+AuthConsentRequest::Payload
+AuthConsentRequest::Payload::fromCbor( const Bytes& cbor )
+{
+     try
+     {
+          Payload payload;
+          nlohmann::json::from_cbor( cbor ).get_to( payload );
           return payload;
      }
      catch( ... )
      {
           internal::translateExceptions();
      }
-     BOOST_ASSERT( !"unreachable code (to suppress compiler warnings)" );
+     /// Never reached code:
+     /// only for suppress compiler warnings!
+     return {};
+}
+
+
+Bytes AuthConsentRequest::Payload::toCbor()
+{
+     try
+     {
+          return nlohmann::json::to_cbor( *this );
+     }
+     catch( ... )
+     {
+          internal::translateExceptions();
+     }
+     /// Never reached code:
+     /// only for suppress compiler warnings!
+     return {};
 }
 
 
@@ -376,4 +420,29 @@ bool lifetimeIsValid(
 )
 {
      return ((iat - acceptableIatDeviation) <= now) and now < exp;
+}
+
+
+AuthConsentRequest AuthConsentRequest::fromCbor( const Bytes& header, const Bytes& payload )
+{
+     try
+     {
+          AuthConsentRequest request;
+          request.header = Header::fromCbor( header );
+          request.payload = Payload::fromCbor( payload );
+          return request;
+     }
+     catch( ... )
+     {
+           internal::translateExceptions();
+     }
+     /// Never reached code:
+     /// only for suppress compiler warnings!
+     return {};
+}
+
+
+AuthConsentRequest AuthConsentRequest::fromCwt( const Cwt& cwt )
+{
+     return AuthConsentRequest::fromCbor( cwt.header, cwt.payload );
 }

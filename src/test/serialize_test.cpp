@@ -77,13 +77,13 @@ BOOST_AUTO_TEST_CASE( ValidCborToCwt )
 
      const auto cborBin = boost::algorithm::unhex( cborHex );
 
-     BOOST_REQUIRE_NO_THROW( Cwt::getParsed({ cborBin.cbegin(), cborBin.cend() }) );
+     BOOST_REQUIRE_NO_THROW( Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() }) );
 }
 BOOST_AUTO_TEST_CASE( InvalidCborToCwt )
 {
      const std::string cborBin = "Not a CBOR at all!";
 
-     BOOST_REQUIRE_THROW( Cwt::getParsed({ cborBin.cbegin(), cborBin.cend() }), CwtError );
+     BOOST_REQUIRE_THROW( Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() }), CwtError );
 }
 BOOST_AUTO_TEST_CASE( ParseCryptoConsentRequestCwt )
 {
@@ -111,43 +111,39 @@ BOOST_AUTO_TEST_CASE( ParseCryptoConsentRequestCwt )
 
      const auto cborBin = boost::algorithm::unhex( cborHex );
 
-     const auto cwt = Cwt::getParsed({ cborBin.cbegin(), cborBin.cend() });
-     const auto header = Header::getParsed( cwt.header );
+     const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
+     const auto request = AuthConsentRequest::fromCwt( cwt );
 
-     BOOST_TEST( header.raw               == cwt.header );
-     BOOST_TEST( header.typ               == "CWT" );
-     BOOST_TEST( header.alg               == "GOST341012" );
-     BOOST_TEST( asHex( header.x5tSt256 ) == "1E0E64B7E2210E34F19293328E3CE191180E39A37E25A9B9F23A724D91F72553" );
-     BOOST_TEST( header.sbt               == "crypto_consent_req" );
-     BOOST_TEST( header.ver               == 1 );
-
-     const auto payload = RequestPayload::getParsed( cwt.payload );
-     BOOST_TEST( payload.raw                                                             == cwt.payload );
-     BOOST_TEST( asHex( payload.cti )                                                    == "911E36FA217419310B0329B04B830A06AF76D103A5E9A3223ED24DBA92472887" );
-     BOOST_TEST( asHex( payload.req_cti )                                                == "C5DCB61DF15D70CC17FB6E74F5BCF6710D1AC376D03D9B77C4973F92BA1472C7" );
-     BOOST_TEST( payload.iss                                                             == "http://esia.gosuslugi.ru" );
-     BOOST_TEST( payload.aud.size()                                                      == 1u );
-     BOOST_TEST( payload.aud[ 0 ]                                                        == "mpauth" );
-     BOOST_TEST( payload.iat                                                             == 1727784317 );
-     BOOST_TEST( payload.exp                                                             == 1727784617 );
-     BOOST_TEST( payload.client_id                                                       == "ya.ru" );
-     BOOST_TEST( payload.client_name                                                     == "client1" );
-     BOOST_TEST( payload.client_ogrnip                                                   == "1132074507355" );
-     BOOST_TEST( payload.resource.size()                                                 == 1u );
-     BOOST_TEST( payload.resource.count( "server1" )                                     != 0u );
-     BOOST_TEST( payload.resource.at( "server1" )                                        == "server1 name" );
-     BOOST_TEST( !!payload.obtained_consent_list );
-     BOOST_TEST( payload.obtained_consent_list->size()                                   == 1u );
-     BOOST_TEST( payload.obtained_consent_list->count( "fullname" )                      != 0u );
-     BOOST_TEST( payload.obtained_consent_list->at( "fullname" )                         == "полное имя" );
-     BOOST_TEST( !!payload.requested_consent_list );
-     BOOST_TEST( payload.requested_consent_list->size()                                  == 1u );
-     BOOST_TEST( payload.requested_consent_list->count( "birthdate" )                    != 0u );
-     BOOST_TEST( payload.requested_consent_list->at( "birthdate" )                       == "Дата рождения" );
-     BOOST_TEST( !!payload.urn_esia_trust );
-     BOOST_TEST( payload.urn_esia_trust->size()                                          == 1u );
-     BOOST_TEST( payload.urn_esia_trust->count( "urn:esia:trust:crypto_auth_resp" )      != 0u );
-     BOOST_TEST( asHex( payload.urn_esia_trust->at( "urn:esia:trust:crypto_auth_resp" ) ) == "21CBB4569DE6092FD6AD3968B08F65A07798AFB8865A5D783E81E4C3A133F70B" );
+     BOOST_TEST( request.header.typ               == "CWT" );
+     BOOST_TEST( request.header.alg               == "GOST341012" );
+     BOOST_TEST( asHex( request.header.x5tSt256 ) == "1E0E64B7E2210E34F19293328E3CE191180E39A37E25A9B9F23A724D91F72553" );
+     BOOST_TEST( request.header.sbt               == "crypto_consent_req" );
+     BOOST_TEST( request.header.ver               == 1 );
+     BOOST_TEST( asHex( request.payload.cti )                                                    == "911E36FA217419310B0329B04B830A06AF76D103A5E9A3223ED24DBA92472887" );
+     BOOST_TEST( asHex( request.payload.req_cti )                                                == "C5DCB61DF15D70CC17FB6E74F5BCF6710D1AC376D03D9B77C4973F92BA1472C7" );
+     BOOST_TEST( request.payload.iss                                                             == "http://esia.gosuslugi.ru" );
+     BOOST_TEST( request.payload.aud.size()                                                      == 1u );
+     BOOST_TEST( request.payload.aud[ 0 ]                                                        == "mpauth" );
+     BOOST_TEST( request.payload.iat                                                             == 1727784317 );
+     BOOST_TEST( request.payload.exp                                                             == 1727784617 );
+     BOOST_TEST( request.payload.client_id                                                       == "ya.ru" );
+     BOOST_TEST( request.payload.client_name                                                     == "client1" );
+     BOOST_TEST( request.payload.client_ogrnip                                                   == "1132074507355" );
+     BOOST_TEST( request.payload.resource.size()                                                 == 1u );
+     BOOST_TEST( request.payload.resource.count( "server1" )                                     != 0u );
+     BOOST_TEST( request.payload.resource.at( "server1" )                                        == "server1 name" );
+     BOOST_TEST( !!request.payload.obtained_consent_list );
+     BOOST_TEST( request.payload.obtained_consent_list->size()                                   == 1u );
+     BOOST_TEST( request.payload.obtained_consent_list->count( "fullname" )                      != 0u );
+     BOOST_TEST( request.payload.obtained_consent_list->at( "fullname" )                         == "полное имя" );
+     BOOST_TEST( !!request.payload.requested_consent_list );
+     BOOST_TEST( request.payload.requested_consent_list->size()                                  == 1u );
+     BOOST_TEST( request.payload.requested_consent_list->count( "birthdate" )                    != 0u );
+     BOOST_TEST( request.payload.requested_consent_list->at( "birthdate" )                       == "Дата рождения" );
+     BOOST_TEST( !!request.payload.urn_esia_trust );
+     BOOST_TEST( request.payload.urn_esia_trust->size()                                          == 1u );
+     BOOST_TEST( request.payload.urn_esia_trust->count( "urn:esia:trust:crypto_auth_resp" )      != 0u );
+     BOOST_TEST( asHex( request.payload.urn_esia_trust->at( "urn:esia:trust:crypto_auth_resp" ) ) == "21CBB4569DE6092FD6AD3968B08F65A07798AFB8865A5D783E81E4C3A133F70B" );
 
      BOOST_TEST( asHex( cwt.signature ) == "B26FE713F164944F0F5A9E8D8EA99F94A69FC0F6554F59D56B72F492B97F76C262BDC5F8C627EE9BAAF687CC129CC914448B2F3720A0265916D5EDE8EFDDED21" );
 }
@@ -177,7 +173,7 @@ BOOST_AUTO_TEST_CASE( CreateTbsCbor )
 
      const auto cborBin = boost::algorithm::unhex( cborHex );
 
-     const auto cwt = Cwt::getParsed({ cborBin.cbegin(), cborBin.cend() });
+     const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
      const auto tbsBlock = cwt.makeTbsBlock();
      BOOST_TEST( asHex( tbsBlock ) == "846A5369676E6174757265315860A563616C676A474F5354333431303132637362747263727970746F5F636F6E73656E745F726571637479706343575463766572016978357423537432353658201E0E64B7E2210E34F19293328E3CE191180E39A37E25A9B9F23A724D91F72553405901B0AD6361756481666D706175746869636C69656E745F69646579612E72756B636C69656E745F6E616D6567636C69656E74316D636C69656E745F6F67726E69706D31313332303734353037333535636374695820911E36FA217419310B0329B04B830A06AF76D103A5E9A3223ED24DBA92472887636578701A66FBE6A9636961741A66FBE57D636973737818687474703A2F2F657369612E676F7375736C7567692E7275756F627461696E65645F636F6E73656E745F6C697374A16866756C6C6E616D6573D0BFD0BED0BBD0BDD0BED0B520D0B8D0BCD18F677265715F6374695820C5DCB61DF15D70CC17FB6E74F5BCF6710D1AC376D03D9B77C4973F92BA1472C7767265717565737465645F636F6E73656E745F6C697374A1696269727468646174657819D094D0B0D182D0B020D180D0BED0B6D0B4D0B5D0BDD0B8D18F687265736F75726365A167736572766572316C73657276657231206E616D656E75726E3A657369613A7472757374A1781F75726E3A657369613A74727573743A63727970746F5F617574685F72657370582021CBB4569DE6092FD6AD3968B08F65A07798AFB8865A5D783E81E4C3A133F70B" );
 }

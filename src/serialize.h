@@ -22,79 +22,67 @@ bool lifetimeIsValid(
 
 
 struct Cwt {
-     const Bytes header;
-     const Bytes payload;
-     const Bytes signature;
+     Bytes header;
+     Bytes payload;
+     Bytes signature;
 
-     static Cwt getParsed( const Bytes& cbor );
+     static Cwt fromCbor( const Bytes& cbor );
+     Bytes toCbor();
 
      /// Формирует особый CBOR (to-be-signed) для проверки подписи
      Bytes makeTbsBlock() const;
-
-private:
-     explicit Cwt( const Bytes& header, const Bytes& payload, const Bytes& signature )
-          : header{ header }, payload{ payload }, signature{ signature }
-     {}
 };
 
 
-struct Header
-{
-     static Header getParsed( const Bytes& cbor );
+struct AuthConsentRequest {
+     struct Header {
+          static Header fromCbor( const Bytes& cbor );
+          Bytes toCbor();
 
-     /// Сохраненный исходный CBOR для проверки подписи и прочих нужд
-     const Bytes raw;
+          /// Обязательные стандартизированные параметры заголовка
+          std::string typ;
+          std::string alg;
+          Bytes x5tSt256;
 
-     /// Обязательные стандартизированные параметры заголовка
-     std::string typ;
-     std::string alg;
-     Bytes x5tSt256;
-
-     /// Обязательные нестандартизированные параметры заголовка
-     int ver;
-     std::string sbt;
-
-private:
-     explicit Header( const Bytes& cbor )
-          : raw{ cbor }
-     {}
-};
+          /// Обязательные нестандартизированные параметры заголовка
+          int ver;
+          std::string sbt;
+     };
 
 
-struct RequestPayload
-{
-     static RequestPayload getParsed( const Bytes& cbor );
+     struct Payload {
+          static Payload fromCbor( const Bytes& cbor );
+          Bytes toCbor();
 
-     /// Сохраненный исходный CBOR для проверки подписи и прочих нужд
-     const Bytes raw;
+          /// Случайные числа для защиты от атак межсайтовых запросов и повторного воспроизведения
+          Bytes cti;
+          Bytes req_cti;
 
-     /// Случайные числа для защиты от атак межсайтовых запросов и повторного воспроизведения
-     Bytes cti;
-     Bytes req_cti;
+          /// Поля адресации токена
+          std::string iss;
+          SequenceOf< std::string > aud;
 
-     /// Поля адресации токена
-     std::string iss;
-     SequenceOf< std::string > aud;
+          /// Сроки действия токена
+          std::time_t iat = {};
+          std::time_t exp = {};
 
-     /// Сроки действия токена
-     std::time_t iat;
-     std::time_t exp;
+          /// Параметры токена запроса разрешений/согласий конечного пользователя
+          std::string client_id;
+          std::string client_name;
+          std::string client_ogrnip;
+          ObjectOf< std::string > resource;
+          OptionalObjectOf< std::string > obtained_consent_list;
+          OptionalObjectOf< std::string > requested_consent_list;
 
-     /// Параметры токена запроса разрешений/согласий конечного пользователя
-     std::string client_id;
-     std::string client_name;
-     std::string client_ogrnip;
-     ObjectOf< std::string > resource;
-     OptionalObjectOf< std::string > obtained_consent_list;
-     OptionalObjectOf< std::string > requested_consent_list;
+          /// Обязательные параметры для построения цепочки доверия
+          OptionalObjectOf< Bytes > urn_esia_trust;
+     };
 
-     /// Обязательные параметры для построения цепочки доверия
-     OptionalObjectOf< Bytes > urn_esia_trust;
+     Header header;
+     Payload payload;
 
-private:
-     explicit RequestPayload( const Bytes& cbor )
-          : raw{ cbor }
-     {}
+     static AuthConsentRequest fromCbor( const Bytes& headerCbor, const Bytes& payloadCbor );
+     static AuthConsentRequest fromCwt( const Cwt& );
 };
 
 

@@ -1,13 +1,10 @@
 #pragma once
 
 #include <iosfwd>
+#include <serialize.h>
 
 
-struct Header;
-struct RequestPayload;
-struct ResponsePayload;
 
-
-std::ostream& operator<<( std::ostream&, const Header& );
-std::ostream& operator<<( std::ostream&, const RequestPayload& );
+std::ostream& operator<<( std::ostream&, const AuthConsentRequest::Header& );
+std::ostream& operator<<( std::ostream&, const AuthConsentRequest::Payload& );
 std::ostream& operator<<( std::ostream&, const ResponsePayload& );

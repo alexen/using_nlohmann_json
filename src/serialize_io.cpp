@@ -6,7 +6,7 @@
 #include <json_types_io.h>
 
 
-std::ostream& operator<<( std::ostream& os, const Header& header )
+std::ostream& operator<<( std::ostream& os, const AuthConsentRequest::Header& header )
 {
      return os
           << "Header:"
@@ -18,7 +18,7 @@ std::ostream& operator<<( std::ostream& os, const Header& header )
 }
 
 
-std::ostream& operator<<( std::ostream& os, const RequestPayload& payload )
+std::ostream& operator<<( std::ostream& os, const AuthConsentRequest::Payload& payload )
 {
      return os
           << "RequestPayload:"
