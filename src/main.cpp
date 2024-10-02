@@ -70,15 +70,12 @@ int main()
 {
      try
      {
-          const auto parsed = nlohmann::json::from_cbor( boost::algorithm::unhex( cbor ) );
-          if( parsed.is_array() and parsed.size() != 3u )
-          {
-               throw std::invalid_argument{ "bad CWT format" };
-          }
+          const auto cborBin = boost::algorithm::unhex( cbor );
+          const auto cwt = Cwt::getParsed({ cborBin.cbegin(), cborBin.cend() });
 
-          std::cout << std::setw( 2 ) << Header::getParsed( parsed[ 0 ].get_binary() ) << '\n';
-          std::cout << std::setw( 2 ) << RequestPayload::getParsed( parsed[ 1 ].get_binary() ) << '\n';
-          std::cout << "Signature:\n  " << parsed[ 2 ].get_binary() << '\n';
+          std::cout << std::setw( 2 ) << Header::getParsed( cwt.header ) << '\n';
+          std::cout << std::setw( 2 ) << RequestPayload::getParsed( cwt.payload ) << '\n';
+          std::cout << "Signature:\n  " << cwt.signature << '\n';
      }
      catch( ... )
      {
