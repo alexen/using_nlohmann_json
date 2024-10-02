@@ -22,6 +22,8 @@ bool lifetimeIsValid(
 
 
 struct Cwt {
+     static Cwt fromCbor( const Bytes& cbor );
+
      explicit Cwt( const Bytes& cbor );
 
      Bytes header;
@@ -76,6 +78,8 @@ struct AuthConsentRequest {
      Header header;
      Payload payload;
 
+     static AuthConsentRequest fromCwt( const Cwt& cwt );
+
      explicit AuthConsentRequest( const Cwt& );
      AuthConsentRequest( const Bytes& header, const Bytes& payload );
 };
@@ -122,6 +126,8 @@ struct AuthConsentResponse {
 
      Header header;
      Payload payload;
+
+     static AuthConsentResponse fromCwt( const Cwt& );
 
      explicit AuthConsentResponse( const Cwt& );
      AuthConsentResponse( const Bytes& headerCbor, const Bytes& payloadCbor );

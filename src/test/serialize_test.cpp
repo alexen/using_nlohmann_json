@@ -111,8 +111,8 @@ BOOST_AUTO_TEST_CASE( ParseCryptoConsentRequestCwt )
 
      const auto cborBin = boost::algorithm::unhex( cborHex );
 
-     const Cwt cwt({ cborBin.cbegin(), cborBin.cend() });
-     const AuthConsentRequest parsed{ cwt };
+     const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
+     const auto parsed = AuthConsentRequest::fromCwt( cwt );
 
      BOOST_TEST( parsed.header.typ == "CWT" );
      BOOST_TEST( parsed.header.alg == "GOST341012" );
@@ -188,8 +188,8 @@ BOOST_AUTO_TEST_CASE( ParseCryptoConsentResponseCwt )
 
      const auto cborBin = boost::algorithm::unhex( cborHex );
 
-     const Cwt cwt({ cborBin.cbegin(), cborBin.cend() });
-     const AuthConsentResponse parsed{ cwt };
+     const auto cwt = Cwt::fromCbor({ cborBin.cbegin(), cborBin.cend() });
+     const auto parsed = AuthConsentResponse::fromCwt( cwt );
 
      BOOST_TEST( parsed.header.typ == "CWT" );
      BOOST_TEST( parsed.header.alg == "GOST341012" );

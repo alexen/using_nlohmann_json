@@ -316,6 +316,12 @@ void fromCbor( const Bytes& cbor, Cwt& cwt )
 } // namespace {anonymous}
 
 
+Cwt Cwt::fromCbor( const Bytes& cbor )
+{
+     return Cwt{ cbor };
+}
+
+
 Cwt::Cwt( const Bytes& cbor )
 {
      internal::cbor_convert::fromCbor( cbor, *this );
@@ -356,6 +362,12 @@ bool lifetimeIsValid(
 }
 
 
+AuthConsentRequest AuthConsentRequest::fromCwt( const Cwt& cwt )
+{
+     return AuthConsentRequest{ cwt };
+}
+
+
 AuthConsentRequest::AuthConsentRequest( const Cwt& cwt )
      : AuthConsentRequest{ cwt.header, cwt.payload }
 {}
@@ -378,6 +390,11 @@ AuthConsentResponse::Payload::Payload( const Bytes& cbor )
      internal::cbor_convert::fromCbor( cbor, *this );
 }
 
+
+AuthConsentResponse AuthConsentResponse::fromCwt( const Cwt& cwt )
+{
+     return AuthConsentResponse{ cwt };
+}
 
 AuthConsentResponse::AuthConsentResponse( const Cwt& cwt )
      : AuthConsentResponse{ cwt.header, cwt.payload }
