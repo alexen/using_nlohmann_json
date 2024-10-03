@@ -9,12 +9,27 @@ endif()
 find_package(Boost COMPONENTS headers REQUIRED)
 
 include(3rdparty/nlohmann_json.cmake)
-add_executable(
-     ${PROJECT_NAME}
-          src/main.cpp
+
+add_library(
+     ${PROJECT_NAME}_objs
+     OBJECT
           src/serialize.cpp
           src/serialize_io.cpp
      )
+target_include_directories(
+     ${PROJECT_NAME}_objs
+     PRIVATE
+          PRIVATE $<TARGET_PROPERTY:${PROJECT_NAME},INCLUDE_DIRECTORIES>
+     )
+
+add_executable(
+     ${PROJECT_NAME}
+          src/main.cpp
+     )
+
+# ===============================================
+# Only for QtCreator project view!
+#
 target_sources(
      ${PROJECT_NAME}
      PRIVATE
@@ -23,9 +38,13 @@ target_sources(
           src/serialize.h
           src/serialize_io.h
      )
+#
+# ===============================================
+
 target_link_libraries(
      ${PROJECT_NAME}
      PRIVATE
+          ${PROJECT_NAME}_objs
           nlohmann_json::nlohmann_json
      )
 set_target_properties(
@@ -43,13 +62,13 @@ if(BUILD_TESTING)
      set(UTEST_NAME ${PROJECT_NAME}-test)
      add_executable(
           ${UTEST_NAME}
-               src/serialize.cpp
                src/test/start_test.cpp
                src/test/serialize_test.cpp
           )
      target_link_libraries(
           ${UTEST_NAME}
           PRIVATE
+               ${PROJECT_NAME}_objs
                Boost::unit_test_framework
 
           )
